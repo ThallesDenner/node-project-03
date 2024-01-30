@@ -1,0 +1,194 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Funções de usuário
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+// Este modelo representa os usuários registrados no banco de dados da aplicação
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(MEMBER)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relacionamentos
+  checkIns CheckIn[] // um usuário (User) pode realizar vários check-ins (CheckIn)
+
+  @@map("users")
+}
+
+// Este modelo representa os check-ins realizados pelos usuários
+model CheckIn {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now()) @map("created_at")
+  validatedAt DateTime? @map("validated_at") // poderia ser isValidated Boolean, entretanto, usar uma data tem a vantagem de fornecer o momento da validação
+
+  // Relacionamento com a entidade User. O relacionamento é estabelecido pelo campo userId em CheckIn e se refere ao campo id em User. A opção onDelete: Cascade significa que se um usuário for excluído, todos os check-ins associados a esse usuário também serão excluídos
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+
+  // Relacionamento com a entidade Gym. O relacionamento é estabelecido pelo campo gymId em CheckIn e se refere ao campo id em Gym. A opção onDelete: Cascade significa que se uma academia for excluída, todos os check-ins associados a essa academia também serão excluídos
+  gym   Gym    @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  gymId String @map("gym_id")
+
+  @@map("check_ins")
+}
+
+model Gym {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  phone       String?
+  latitude    Decimal
+  longitude   Decimal
+
+  // Relacionamentos
+  checkIns CheckIn[] // uma academia (Gym) pode ter vários check-ins (CheckIn)
+
+  @@map("gyms")
+}
+
+// Modelos:
+// Um modelo de dados é uma representação abstrata de como os dados são organizados e estruturados em um sistema. Ele define as entidades (objetos ou conceitos), os atributos dessas entidades e os relacionamentos entre elas.
+// Em Prisma, a palavra-chave model é usada para definir um modelo de dados.
+// A parte de definição do modelo de dados do esquema Prisma define seus modelos de aplicação (também chamados de modelos Prisma). Modelos:
+// - Representa as entidades do domínio do seu aplicativo
+// - Mapeia para tabelas (bancos de dados relacionais como PostgreSQL) ou coleções (MongoDB) em seu banco de dados
+// - Forma a base das consultas disponíveis na API Prisma Client gerada
+// - Quando usado com TypeScript, o Prisma Client fornece definições de tipo geradas para seus modelos e quaisquer variações deles para tornar o acesso ao banco de dados totalmente seguro.
+
+// O esquema a seguir descreve uma plataforma de blog:
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Bancos de dados relacionais
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// model User {
+//   id      Int      @id @default(autoincrement())
+//   email   String   @unique
+//   name    String?
+//   role    Role     @default(USER)
+//   posts   Post[]
+//   profile Profile?
+// }
+
+// model Profile {
+//   id     Int    @id @default(autoincrement())
+//   bio    String
+//   user   User   @relation(fields: [userId], references: [id])
+//   userId Int    @unique
+// }
+
+// model Post {
+//   id         Int        @id @default(autoincrement())
+//   createdAt  DateTime   @default(now())
+//   updatedAt  DateTime   @updatedAt
+//   title      String
+//   published  Boolean    @default(false)
+//   author     User       @relation(fields: [authorId], references: [id])
+//   authorId   Int
+//   categories Category[]
+// }
+
+// model Category {
+//   id    Int    @id @default(autoincrement())
+//   name  String
+//   posts Post[]
+// }
+
+// enum Role {
+//   USER
+//   ADMIN
+// }
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// MongoDB
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// datasource db {
+//   provider = "mongodb"
+//   url      = env("DATABASE_URL")
+// }
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// model User {
+//   id      String   @id @default(auto()) @map("_id") @db.ObjectId
+//   email   String   @unique
+//   name    String?
+//   role    Role     @default(USER)
+//   posts   Post[]
+//   profile Profile?
+// }
+
+// model Profile {
+//   id     String @id @default(auto()) @map("_id") @db.ObjectId
+//   bio    String
+//   user   User   @relation(fields: [userId], references: [id])
+//   userId String @unique @db.ObjectId
+// }
+
+// model Post {
+//   id         String     @id @default(auto()) @map("_id") @db.ObjectId
+//   createdAt  DateTime   @default(now())
+//   title      String
+//   published  Boolean    @default(false)
+//   author     User       @relation(fields: [authorId], references: [id])
+//   authorId   String     @db.ObjectId
+//   categoryIDs String[]   @db.ObjectId
+//   categories  Category[] @relation(fields: [categoryIDs], references: [id])
+// }
+
+// model Category {
+//   id    String @id @default(auto()) @map("_id") @db.ObjectId
+//   name  String
+//   postIDs String[] @db.ObjectId
+//   posts   Post[]   @relation(fields: [postIDs], references: [id])
+// }
+// enum Role {
+//   USER
+//   ADMIN
+// }
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// A nomenclatura adotada pelo Prisma segue o padrão de camelCase para nomes de campos e PascalCase para nomes de modelos. Além disso, utiliza a forma singular para modelos Prisma.
+
+// Anotações:
+// A anotação @id em um modelo Prisma especifica que o campo ao qual ela está atribuída deve ser usado como identificador único da entidade. Em outras palavras, esse campo será a chave primária da tabela correspondente no banco de dados.
+// A anotação @default em um modelo Prisma é usada para especificar um valor padrão para um campo. Isso significa que, se um valor não for fornecido para esse campo durante a criação de um novo registro, o valor padrão será usado.
+// A anotação @unique em um modelo Prisma especifica que o valor de um campo específico deve ser único em toda a tabela. Isso significa que nenhum dos registros podem ter o mesmo valor nesse campo.
+// A anotação @map em um modelo Prisma permite renomear um campo. Por exemplo, suponha que exista o campo nomeCompleto no modelo Prisma, com @map('nome_completo') especificamos como o campo deve ser nomeado no banco de dados.
+// A anotação @@map em um modelo Prisma permite renomear uma entidade. Por exemplo, suponha que exista a entidade User no modelo Prisma, com @@map('users') especificamos como a entidade deve ser nomeada no banco de dados.
+// A anotação @relation em um modelo Prisma é usada para definir relacionamentos entre modelos. Ela especifica como as tabelas (entidades) estão relacionadas no nível do banco de dados. Essa anotação é especialmente útil quando você está trabalhando com bancos de dados relacionais.
+// A anotação @db.Text em um modelo Prisma é usada para mapear uma string para o tipo TEXT (tipo de dados nativo no banco de dados).
+
+// Funções:
+// uuid() é uma função que gera um identificador único universal (UUID). UUIDs são strings de 128 bits (16 bytes) que geralmente são representadas por 32 caracteres hexadecimais, divididos por hifens em cinco grupos, por exemplo, "550e8400-e29b-41d4-a716-446655440000".
+// cuid() é uma função que gera identificadores únicos curtos.
+// now() é uma função que retorna o timestamp atual do sistema no formato de data e hora. Essa função é frequentemente usada ao definir um valor padrão para um campo de data e hora em um modelo Prisma. Vale notar que now() geralmente retorna a data e hora no formato UTC (Coordinated Universal Time). 

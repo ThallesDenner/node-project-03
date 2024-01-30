@@ -1,0 +1,37 @@
+# Nome do fluxo de trabalho. Esse nome será exibido no GitHub Actions para identificar o fluxo de trabalho.
+name: Run Unit Tests
+
+# O fluxo de trabalho chamado "Run Unit Tests" será acionado quando ocorrer um evento de push na branch main.
+on:
+  push:
+    branches:
+      - main
+
+# Lista trabalhos a serem executados no fluxo de trabalho. Cada trabalho é uma unidade de execução independente. 
+jobs:
+  # O trabalho "Run Unit Tests" será executado em um ambiente Ubuntu na versão mais recente.
+  run-unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    # Lista de passos que serão executados no trabalho "Run Unit Tests"
+    steps:
+      # Utiliza a ação checkout para clonar o repositório na versão 3. Isso garante que o código mais recente seja obtido antes da execução do fluxo de trabalho.
+      - uses: actions/checkout@v3
+
+      # Utiliza a ação setup-node para configurar o ambiente Node.js. Define a versão do Node.js para 20 e usa o cache npm para acelerar a instalação de dependências nas execuções subsequentes.
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # Executa o comando npm ci, que instala as dependências do projeto de acordo com o arquivo package-lock.json. 
+      # A principal diferença entre npm ci e npm i é que npm ci ignora o package.json durante a instalação e instala exatamente as versões especificadas no package-lock.json.
+      # O npm i instala as dependências especificadas no arquivo package.json. Se houver qualquer alteração nas versões das dependências no package.json, essas mudanças serão refletidas no arquivo package-lock.json.
+      # Portanto, em um ambiente CI/CD, onde a consistência nas versões das dependências é crucial, npm ci é frequentemente preferido para garantir que as versões exatas especificadas no package-lock.json sejam instaladas.
+      - run: npm ci
+
+      # Executa o comando npm run test para rodar os testes unitários do projeto.
+      - run: npm run test
+
+# Em resumo, este fluxo de trabalho automatiza a execução de testes unitários em um projeto Node.js sempre que ocorrer um evento de push na branch main. Ele configura o ambiente, instala dependências, e executa os testes definidos no script test no arquivo package.json.

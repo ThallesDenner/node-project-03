@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgresql:
+    image: bitnami/postgresql
+    ports:
+      - 5430:5432
+    environment:
+      - POSTGRESQL_USERNAME=admin
+      - POSTGRESQL_PASSWORD=p03db
+      - POSTGRESQL_DATABASE=project-03-database
+
+
+# version: versão do Docker Compose
+# services: cada objeto dentro de services será um serviço que rodará em um contêiner
+# image: a imagem base a ser usada na construção do contêiner (caso a imagem não seja encontrada localmente, será buscada do Docker Hub)
+# ports: associação de uma porta do host com a porta do contêiner no qual o serviço está em execução
+# environment: variáveis de ambiente
