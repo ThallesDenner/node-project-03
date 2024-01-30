@@ -1,13 +1,10 @@
 # Nome do fluxo de trabalho. Esse nome será exibido no GitHub Actions para identificar o fluxo de trabalho.
 name: Run Unit Tests
 
-# O fluxo de trabalho chamado "Run Unit Tests" será acionado quando ocorrer um evento de push na branch main.
-on:
-  push:
-    branches:
-      - main
+# O fluxo de trabalho "Run Unit Tests" será acionado quando ocorrer um evento de push no repositório.
+on: [push]
 
-# Lista trabalhos a serem executados no fluxo de trabalho. Cada trabalho é uma unidade de execução independente. 
+# Lista de trabalhos a serem executados no fluxo de trabalho. Cada trabalho é uma unidade de execução independente. 
 jobs:
   # O trabalho "Run Unit Tests" será executado em um ambiente Ubuntu na versão mais recente.
   run-unit-tests:
@@ -34,4 +31,4 @@ jobs:
       # Executa o comando npm run test para rodar os testes unitários do projeto.
       - run: npm run test
 
-# Em resumo, este fluxo de trabalho automatiza a execução de testes unitários em um projeto Node.js sempre que ocorrer um evento de push na branch main. Ele configura o ambiente, instala dependências, e executa os testes definidos no script test no arquivo package.json.
+# Em resumo, este fluxo de trabalho automatiza a execução de testes unitários em um projeto Node.js sempre que ocorrer um evento de push no repositório. Ele configura o ambiente, instala dependências, e executa os testes definidos no script test no arquivo package.json.
