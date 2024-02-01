@@ -39,10 +39,18 @@ app.register(checkInsRoutes)
 
 // Manipulador de erros global
 app.setErrorHandler((error, _, response) => {
+  // Esta condicional trata erros que podem ocorrer durante ao validação de dados do Zod
   if (error instanceof ZodError) {
     return response
       .status(400) // o status HTTP 400 indica que o servidor não pode ou não irá processar a requisição devido a alguma coisa que foi entendida como um erro do cliente
       .send({ message: 'Validation error.', issues: error.format() })
+  }
+
+  // Esta condicional trata o erro que ocorre quando não há autorização para acessar a rota /token/refresh
+  if (error.code === 'FST_JWT_NO_AUTHORIZATION_IN_COOKIE') {
+    return response
+      .status(401) // o status HTTP 401 indica que a solicitação não foi aceita porque não possui credenciais de autenticação válidas para o recurso
+      .send({ message: 'Invalid JWT token.', code: error.code })
   }
 
   if (env.NODE_ENV !== 'production') {
